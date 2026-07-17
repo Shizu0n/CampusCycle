@@ -1,0 +1,356 @@
+/* ========== O PLACAR (odômetro — elemento-assinatura) ========== */
+.placar-hero {
+  text-align: center;
+  padding: var(--sp-lg) 0 var(--sp-xl);
+}
+
+.placar-caption {
+  font-family: var(--font-mono);
+  font-size: var(--text-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  margin-bottom: var(--sp-sm);
+}
+
+.odometer {
+  display: inline-flex;
+  gap: var(--sp-xs);
+}
+
+.odometer-window {
+  display: block;
+  height: 1em;
+  overflow: hidden;
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+  font-family: var(--font-display);
+  font-size: clamp(56px, 9vw, 104px);
+  line-height: 1;
+  padding: 0 0.06em;
+}
+
+.odometer-strip {
+  display: block;
+  transition: transform 1.2s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.odometer-digit {
+  display: block;
+  height: 1em;
+}
+
+.odometer-sep {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 9vw, 104px);
+  line-height: 1;
+  align-self: end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .odometer-strip {
+    transition: none;
+  }
+}
+
+.placar-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+  margin-top: var(--sp-md);
+}
+
+.placar-money {
+  font-size: var(--text-lead);
+}
+
+.placar-pitch {
+  max-width: 560px;
+  font-size: var(--text-lead);
+  margin: 0;
+}
+
+.placar-ctas {
+  display: flex;
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn--ghost {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.btn--danger {
+  background: var(--error);
+}
+
+.vitrine-section h2 {
+  font-size: var(--text-h2);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========== Filtros ========== */
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.filter-search {
+  max-width: 420px;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+}
+
+.chip {
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: var(--text-ui);
+  padding: var(--sp-xs) var(--sp-md);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.chip--doacao[aria-pressed='true'] {
+  background: var(--verde);
+  color: #fff;
+}
+
+/* ========== Hang-tag (card de anúncio) ========== */
+.hang-tag {
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  padding: var(--sp-lg) var(--sp-md) var(--sp-md);
+  transition: transform 150ms ease-out;
+}
+
+/* Furo de etiqueta: círculo de papel com borda de tinta */
+.hang-tag::before {
+  content: '';
+  position: absolute;
+  top: var(--sp-sm);
+  left: 50%;
+  translate: -50% 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--paper);
+  border: var(--border);
+}
+
+/* Rotação alternada; endireita no hover (só transform — sombra nunca transiciona) */
+.feed-grid > *:nth-child(odd) .hang-tag,
+.feed-grid > *:nth-child(odd).hang-tag {
+  transform: rotate(-1deg);
+}
+
+.feed-grid > *:nth-child(even) .hang-tag,
+.feed-grid > *:nth-child(even).hang-tag {
+  transform: rotate(0.8deg);
+}
+
+.feed-grid > *:hover .hang-tag,
+.feed-grid > *.hang-tag:hover {
+  transform: rotate(0deg);
+}
+
+.hang-tag-link {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+.tag-media {
+  height: 120px;
+  border: var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: var(--sp-sm);
+}
+
+.tag-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tag-initial {
+  font-family: var(--font-display);
+  font-size: 44px;
+  color: var(--ink);
+}
+
+/* Variantes de composição do placeholder (hash do id) */
+.tag-media[data-variant='1'] {
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 0 var(--sp-sm);
+}
+
+.tag-media[data-variant='1'] .tag-initial {
+  font-size: 72px;
+  line-height: 0.8;
+}
+
+.tag-media[data-variant='2'] {
+  justify-content: flex-start;
+  padding: 0 var(--sp-md);
+}
+
+.tag-media[data-variant='2'] .tag-initial {
+  -webkit-text-stroke: 2px var(--ink);
+  color: transparent;
+  font-size: 56px;
+}
+
+.tag-title {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: var(--text-body);
+  margin: 0 0 var(--sp-2xs);
+}
+
+.tag-category {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 var(--sp-sm);
+}
+
+.tag-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+}
+
+.price-splash--doar {
+  background: var(--verde);
+  color: #fff;
+}
+
+.stamp--vendido {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.vitrine-status {
+  color: var(--muted);
+  font-size: var(--text-lead);
+  padding: var(--sp-lg) 0;
+}
+
+/* ========== Meus anúncios ========== */
+.mine-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+/* ========== Detalhe ========== */
+.detail {
+  max-width: 560px;
+}
+
+.detail-back {
+  display: inline-block;
+  margin-top: var(--sp-lg);
+  font-weight: 600;
+}
+
+/* ========== Navegação ========== */
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+}
+
+.desktop-nav a:not(.btn) {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.desktop-nav a:not(.btn)[aria-current='page'] {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--verde);
+}
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: var(--surface);
+    border-top: var(--border);
+  }
+
+  .bottom-nav a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .bottom-nav a[aria-current='page'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  main {
+    padding-bottom: 72px; /* espaço para a bottom-nav fixa */
+  }
+}

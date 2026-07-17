@@ -24,22 +24,47 @@ const PAGE_SIZE = 12;
 export function listingsRouter(requireIdentity: RequestHandler, writeLimiter: RequestHandler) {
   const router = Router();
 
-  // ATENÇÃO: quando /mine nascer (dias 4-5), registrar ANTES de /:id — senão :id engole a rota.
-
   router.get(
     '/',
     asyncHandler(async (req, res) => {
       const page = Math.max(1, Number(req.query.page) || 1);
+      const { category, q, donation } = req.query;
+
+      const where: Prisma.ListingWhereInput = {};
+      if (typeof category === 'string' && category) where.category = category;
+      if (donation === 'true') where.price = null;
+      if (typeof q === 'string' && q.trim()) {
+        where.OR = [
+          { title: { contains: q.trim(), mode: 'insensitive' } },
+          { description: { contains: q.trim(), mode: 'insensitive' } },
+        ];
+      }
+
       const [items, total] = await Promise.all([
         prisma.listing.findMany({
+          where,
           select: PUBLIC_SELECT,
           orderBy: { createdAt: 'desc' },
           skip: (page - 1) * PAGE_SIZE,
           take: PAGE_SIZE,
         }),
-        prisma.listing.count(),
+        prisma.listing.count({ where }),
       ]);
       res.json({ items, page, pageSize: PAGE_SIZE, total });
+    })
+  );
+
+  // /mine ANTES de /:id — senão :id engole a rota (design doc, nota de implementação).
+  router.get(
+    '/mine',
+    requireIdentity,
+    asyncHandler(async (req, res) => {
+      const items = await prisma.listing.findMany({
+        where: { userId: req.userId },
+        select: PUBLIC_SELECT,
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ items });
     })
   );
 

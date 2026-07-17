@@ -21,7 +21,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch(`${BASE}${path}`, { ...init, signal: controller.signal });
+    const res = await fetch(`${BASE}${path}`, {
+      ...init,
+      // Identidade em TODA requisição (o GET /mine também precisa dela).
+      headers: { 'X-User-Id': getUserId(), ...init.headers },
+      signal: controller.signal,
+    });
     if (res.status === 204) return undefined as T;
     const body = await res.json().catch(() => null);
     if (!res.ok) {
@@ -41,11 +46,11 @@ export function apiGet<T>(path: string): Promise<T> {
 export function apiPost<T>(path: string, data: unknown): Promise<T> {
   return request<T>(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-User-Id': getUserId() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
 }
 
 export function apiDelete(path: string): Promise<void> {
-  return request<void>(path, { method: 'DELETE', headers: { 'X-User-Id': getUserId() } });
+  return request<void>(path, { method: 'DELETE' });
 }

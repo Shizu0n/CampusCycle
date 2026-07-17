@@ -33,4 +33,14 @@
 - **Verificação que rendeu correção (material de reflexão crítica):** o build inicial do PWA NÃO precacheava as fontes woff2 — o default do plugin só inclui js/css/html. Detectado inspecionando o manifest de precache gerado em `dist/sw.js`; sem a correção (`globPatterns`), a cena do modo avião renderizaria em Verdana. Corrigido e re-verificado (19 entradas, subsets vietnamitas excluídos).
 - **QA automatizado em navegador headless pegou bug real:** CORS bloqueava o preview de produção (allowlist só tinha a porta do dev server, 5173, não a do `vite preview`, 4173). Corrigido no server e re-testado: fluxo completo criar anúncio → validar → publicar → aparecer no feed, verificado em desktop e mobile viewport.
 
+### 2026-07-17 (dia 1, sessão contínua) — Obrigatórios dos dias 4-5
+
+- **API:** filtros `?category=&q=&donation=true` (busca case-insensitive em título+descrição), rota `/api/listings/mine` registrada ANTES de `/:id`; suíte sobe para 20 testes verdes. Seed com 24 anúncios (todas as categorias, `imageUrl: null` — placeholder é feature), 3 vendidos + 2 doados para o contador ter dado real.
+- **Web:** Landing com O PLACAR (odômetro por tiras de dígitos, stagger 1.2s, `aria-hidden` + valor em sr-only, reduced-motion estático), vitrine com chips `aria-pressed`, cards hang-tag (furo, rotação alternada ±1°, 3 variantes de placeholder por hash do id), `/mine` com remoção, detalhe mínimo, bottom-nav mobile em Chivo Mono 12px.
+- **3 bugs reais detectados pelo QA automatizado em navegador (material de reflexão crítica):**
+  1. *Closure stale nos chips de filtro:* cliques em sequência rápida sobrescreviam o toggle anterior (o onClick fechava sobre a prop `filters` do render antigo). Diagnóstico: contagens de cards inconsistentes no QA → inspeção de `aria-pressed` via DOM. Correção: functional updates (`prev => next`).
+  2. *`apiGet` sem header de identidade:* `/mine` respondia 401 — o header `X-User-Id` só era enviado em POST/DELETE. Correção: identidade centralizada no transporte (toda requisição).
+  3. *Processo de API stale:* o servidor de teste rodava código antigo (iniciado com `tsx` sem watch antes das mudanças) — os filtros "não funcionavam" no navegador mas passavam nos testes. Lição operacional: sempre conferir se o processo em execução corresponde ao código.
+- Nota do PWA em desenvolvimento: com `registerType: 'prompt'`, o SW serve o bundle precacheado antigo até o usuário aceitar a atualização — comportamento correto em produção, mas exige unregister/limpeza de caches ao fazer QA local de builds sucessivos.
+
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

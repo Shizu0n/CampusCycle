@@ -28,14 +28,6 @@
   gap: var(--sp-lg);
 }
 
-.feed-category {
-  font-family: var(--font-mono);
-  font-size: var(--text-meta);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
 .new-listing-form {
   max-width: 480px;
   display: flex;
