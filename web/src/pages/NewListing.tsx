@@ -1,24 +1,41 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiError, apiPost } from '../lib/api';
 import { IDENTITY_MODE } from '../lib/auth';
-import { CATEGORIES, createListingSchema } from '../schemas/listing';
+import { enqueue, removeQueueItem } from '../lib/offlineQueue';
+import { CATEGORIES, createListingSchema, type CreateListingInput } from '../schemas/listing';
 import type { Listing } from '../types';
 
+/** Estado de navegação vindo do /mine: revisar um item failed da fila
+ *  (emenda Eng 9 — o form reabre preenchido exibindo o erro DO SERVIDOR). */
+export interface ReviseState {
+  revise?: { payload: CreateListingInput; errorReason?: string };
+}
+
 export function NewListing() {
+  const revise = (useLocation().state as ReviseState | null)?.revise;
+
   // UUID gerado no MOUNT do formulário e reutilizado em todos os retries —
   // idempotência da fila offline (emenda CEO 3). Regenerado só após sucesso.
-  const listingId = useMemo(() => crypto.randomUUID(), []);
+  // Em revisão, REUSA o UUID do item failed (mesmo id em todos os retries).
+  const listingId = useMemo(
+    () => revise?.payload.id ?? crypto.randomUUID(),
+    [revise?.payload.id]
+  );
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<string>('Livros');
-  const [priceText, setPriceText] = useState('');
-  const [isDonation, setIsDonation] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
+  const [title, setTitle] = useState(revise?.payload.title ?? '');
+  const [description, setDescription] = useState(revise?.payload.description ?? '');
+  const [category, setCategory] = useState<string>(revise?.payload.category ?? 'Livros');
+  const [priceText, setPriceText] = useState(
+    revise && revise.payload.price !== null
+      ? (revise.payload.price / 100).toFixed(2).replace('.', ',')
+      : ''
+  );
+  const [isDonation, setIsDonation] = useState(revise ? revise.payload.price === null : false);
+  const [imageUrl, setImageUrl] = useState(revise?.payload.imageUrl ?? '');
   const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(revise?.errorReason ?? null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,23 +65,38 @@ export function NewListing() {
 
     setSubmitting(true); // botão desabilitado em voo (emenda CEO 3)
     try {
-      // Dia 3: POST direto. Nos dias 10-12 este transporte é substituído pela
-      // fila offline (IndexedDB + retry) — o schema e o UUID já estão prontos.
       await apiPost<Listing>('/api/listings', parsed.data);
+      if (revise) await removeQueueItem(listingId); // o failed revisado já publicou
       navigate('/');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401 && IDENTITY_MODE === 'jwt') {
         navigate('/login', { state: { next: '/new' } });
         return;
       }
-      setErrorMsg(err instanceof ApiError ? err.message : 'Falha de rede — tente novamente.');
-      setSubmitting(false);
+      if (err instanceof ApiError) {
+        setErrorMsg(err.message);
+        setSubmitting(false);
+        return;
+      }
+      // Falha de REDE → fila offline (o momento-uau). put() pelo mesmo UUID
+      // também cobre a re-tentativa de um item revisado.
+      try {
+        await enqueue(parsed.data);
+        navigate('/mine');
+      } catch {
+        // Guarda de IndexedDB (emenda Eng 8): offline E sem armazenamento —
+        // erro visível preservando o formulário preenchido.
+        setErrorMsg(
+          'Sem conexão e sem armazenamento local disponível — seus dados continuam aqui; tente de novo ao reconectar.'
+        );
+        setSubmitting(false);
+      }
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="form-stack">
-      <h2>Novo anúncio</h2>
+      <h2>{revise ? 'Revisar anúncio' : 'Novo anúncio'}</h2>
 
       <label htmlFor="title">Título</label>
       <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />

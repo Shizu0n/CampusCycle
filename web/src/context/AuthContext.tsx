@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { endSession, getStoredUser, startSession, type AuthUser } from '../lib/auth';
+import { syncQueue } from '../lib/offlineQueue';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -17,6 +18,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login: async (token, u) => {
       await startSession(token, u); // purge do cache da API acontece aqui dentro
       setUser(u);
+      // Item pending por 401 (JWT expirado) sincroniza após o re-login (CEO 1).
+      void syncQueue();
     },
     logout: async () => {
       await endSession();

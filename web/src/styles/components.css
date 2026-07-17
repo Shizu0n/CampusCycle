@@ -268,6 +268,43 @@
   color: var(--paper);
 }
 
+/* Badges da fila offline (máquina de estados — offlineQueue.ts) */
+.stamp--sync {
+  background: var(--info);
+  color: #fff;
+}
+
+.stamp--failed {
+  background: var(--error);
+  color: #fff;
+}
+
+.stamp--publicado {
+  background: var(--verde);
+  color: #fff;
+}
+
+/* "Thunk" do carimbo na mudança de estado (DESIGN.md, movimento nº 2):
+   scale 1.15 → 1 em 120ms, só transform. */
+.stamp--thunk {
+  animation: stamp-thunk 120ms ease-out;
+}
+
+@keyframes stamp-thunk {
+  from {
+    transform: scale(1.15);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp--thunk {
+    animation: none;
+  }
+}
+
 .vitrine-status {
   color: var(--muted);
   font-size: var(--text-lead);

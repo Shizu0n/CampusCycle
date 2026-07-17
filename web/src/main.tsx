@@ -13,6 +13,10 @@ import './styles/app.css';
 import './styles/components.css';
 import { App } from './App';
 import { AuthProvider } from './context/AuthContext';
+import { initOfflineQueue } from './lib/offlineQueue';
+
+// Retry no load + listener 'online' — o sync primário da fila (design doc).
+initOfflineQueue();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
