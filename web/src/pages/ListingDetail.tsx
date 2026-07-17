@@ -18,7 +18,16 @@ export function ListingDetail() {
   }, [id]);
 
   if (error) return <p className="vitrine-status">Anúncio não encontrado.</p>;
-  if (!listing) return <p className="vitrine-status">Carregando…</p>;
+  if (!listing)
+    return (
+      <div className="detail card skeleton" aria-busy="true" aria-label="Carregando anúncio">
+        <div className="skeleton-line skeleton-line--meta" />
+        <div className="skeleton-line skeleton-line--title" />
+        <div className="skeleton-line" />
+        <div className="skeleton-line" />
+        <div className="skeleton-line skeleton-line--price" />
+      </div>
+    );
 
   return (
     <article className="detail card">

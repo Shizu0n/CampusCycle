@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ListingCard } from '../components/ListingCard';
-import { ApiError, apiDelete, apiGet } from '../lib/api';
+import { SkeletonGrid } from '../components/SkeletonCard';
+import { ApiError, apiDelete, apiGet, apiPatch } from '../lib/api';
 import { IDENTITY_MODE } from '../lib/auth';
 import type { Listing } from '../types';
 
@@ -12,6 +13,7 @@ type LoadState = 'loading' | 'ready' | 'error';
 export function MyListings() {
   const [state, setState] = useState<LoadState>('loading');
   const [items, setItems] = useState<Listing[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const load = useCallback(() => {
@@ -43,7 +45,26 @@ export function MyListings() {
     }
   }
 
-  if (state === 'loading') return <p className="vitrine-status">Carregando seus anúncios…</p>;
+  // Fecha o ciclo do anúncio e alimenta o placar (/api/stats conta sold/donated).
+  async function handleStatus(id: string, status: 'sold' | 'donated') {
+    setBusyId(id);
+    try {
+      const updated = await apiPatch<Listing>(`/api/listings/${id}`, { status });
+      setItems((prev) => prev.map((l) => (l.id === id ? updated : l)));
+    } catch {
+      window.alert('Não foi possível atualizar — tente de novo.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (state === 'loading')
+    return (
+      <div>
+        <h2>Meus anúncios</h2>
+        <SkeletonGrid count={3} />
+      </div>
+    );
   if (state === 'error')
     return <p className="vitrine-status">Não foi possível carregar. Tente de novo.</p>;
 
@@ -52,7 +73,8 @@ export function MyListings() {
       <h2>Meus anúncios</h2>
 
       {items.length === 0 ? (
-        <div className="vitrine-status">
+        <div className="empty-state">
+          <span className="stamp stamp--segunda-vida">Tudo limpo</span>
           <p>Você ainda não anunciou nada.</p>
           <Link to="/new" className="btn">
             Anunciar agora
@@ -63,9 +85,33 @@ export function MyListings() {
           {items.map((l) => (
             <div key={l.id} className="mine-item">
               <ListingCard listing={l} />
-              <button className="btn btn--danger" onClick={() => handleDelete(l.id)}>
-                Remover
-              </button>
+              <div className="mine-actions">
+                {l.status === 'available' && (
+                  <>
+                    <button
+                      className="btn"
+                      disabled={busyId === l.id}
+                      onClick={() => handleStatus(l.id, 'sold')}
+                    >
+                      Vendi!
+                    </button>
+                    <button
+                      className="btn btn--ghost"
+                      disabled={busyId === l.id}
+                      onClick={() => handleStatus(l.id, 'donated')}
+                    >
+                      Doei!
+                    </button>
+                  </>
+                )}
+                <button
+                  className="btn btn--danger"
+                  disabled={busyId === l.id}
+                  onClick={() => handleDelete(l.id)}
+                >
+                  Remover
+                </button>
+              </div>
             </div>
           ))}
         </section>

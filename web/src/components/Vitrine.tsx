@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { apiGet } from '../lib/api';
 import type { ListingsPage } from '../types';
+import { Link } from 'react-router-dom';
 import { CategoryFilter, type FilterState } from './CategoryFilter';
 import { ListingCard } from './ListingCard';
+import { SkeletonGrid } from './SkeletonCard';
 
 type LoadState = 'loading' | 'cold' | 'ready' | 'error';
 
@@ -50,18 +52,22 @@ export function Vitrine() {
     <div>
       <CategoryFilter filters={filters} onChange={setFilters} />
 
-      {state === 'loading' && <p className="vitrine-status">Carregando vitrine…</p>}
       {state === 'cold' && (
         <p className="vitrine-status">Servidor gratuito acordando (~1 min)… segura aí.</p>
       )}
+      {(state === 'loading' || state === 'cold') && <SkeletonGrid />}
       {state === 'error' && (
         <p className="vitrine-status">Não foi possível carregar a vitrine. Tente de novo.</p>
       )}
 
       {state === 'ready' && data && data.items.length === 0 && (
-        <p className="vitrine-status">
-          Nada por aqui com esses filtros — tente outra categoria ou anuncie você!
-        </p>
+        <div className="empty-state">
+          <span className="stamp stamp--segunda-vida">Nada por aqui</span>
+          <p>Nenhum anúncio com esses filtros — tente outra categoria ou anuncie você!</p>
+          <Link to="/new" className="btn">
+            Anunciar agora
+          </Link>
+        </div>
       )}
 
       {state === 'ready' && data && data.items.length > 0 && (

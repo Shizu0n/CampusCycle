@@ -32,3 +32,21 @@ export const createListingSchema = z
   .strict();
 
 export type CreateListingInput = z.infer<typeof createListingSchema>;
+
+export const STATUSES = ['available', 'sold', 'donated'] as const;
+
+// PATCH (dono): título/descrição/preço/status — ex.: marcar como vendido/doado.
+export const updateListingSchema = z
+  .object({
+    title: z.string().trim().min(3).max(80),
+    description: z.string().trim().min(10).max(1000),
+    price: z.number().int().min(0).max(100_000_00).nullable(),
+    status: z.enum(STATUSES),
+  })
+  .partial()
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'informe ao menos um campo para atualizar',
+  });
+
+export type UpdateListingInput = z.infer<typeof updateListingSchema>;

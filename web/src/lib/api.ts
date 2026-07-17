@@ -62,6 +62,14 @@ export function apiPost<T>(path: string, data: unknown): Promise<T> {
   });
 }
 
+export function apiPatch<T>(path: string, data: unknown): Promise<T> {
+  return request<T>(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
 export function apiDelete(path: string): Promise<void> {
   return request<void>(path, { method: 'DELETE' });
 }

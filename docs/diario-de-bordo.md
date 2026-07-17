@@ -59,4 +59,15 @@
 - QA ponta a ponta em modo jwt (builds e envs via shell, sem tocar em `.env`): `/new` deslogado → `/login`; registro → saudação no header; anúncio criado com Bearer; `/mine` lista; logout → `/mine` volta ao login; senha errada exibe o erro do envelope; re-login retorna à rota `next` com os dados. Zero erros de console.
 - Ambiente local restaurado ao padrão `anonymous` — o flip para jwt é decisão de deploy (uma env em cada plataforma).
 
+### 2026-07-17 (dia 1, sessão contínua) — Offline leitura + PATCH + polimento (dias 8-9 do plano)
+
+- **Prompt real:** restauração de contexto da sessão anterior (`/context-restore`) + "continue" — a IA retomou o plano salvo e executou o bloco dos dias 8-9 sem reabrir decisões já travadas.
+- **SW (runtime caching), completando a tabela do `sw.ts`:** NetworkFirst para `GET /api/listings*` no cache `campuscycle-api-v1` (o contrato de `lib/cacheNames.ts` criado na sessão de auth) com `networkTimeoutSeconds: 4` — no cold start do Render, quem já tem cache vê o feed cacheado enquanto o servidor acorda (emenda CEO 8); CacheFirst para imagens externas (60 itens/30 dias); NetworkOnly para `/api/auth/*`. Tabela-comentário atualizada no mesmo commit, como manda a convenção.
+- **Detalhe técnico que evitaria um bug silencioso:** imagens externas sem CORS chegam como resposta *opaca* (status 0) e o Workbox NÃO as cacheia por padrão — sem o `CacheableResponsePlugin({ statuses: [0, 200] })`, o CacheFirst pareceria funcionar online e falharia offline. Registrado como comentário no código.
+- **PATCH `/api/listings/:id` (o U do CRUD, emenda CEO 18):** schema zod parcial + `.strict()` + "ao menos um campo"; só título/descrição/preço/status (escopo do design doc); checagem de dono (403), 404, 401, select público sem `userId`. Cópia verbatim espelhada no schema do web. **Suíte: 30 → 35 testes verdes** (5 novos: dono marca vendido, não-dono 403, 404/401, status inválido/campo estranho/body vazio 400, preço → doação).
+- **"Vendi!/Doei!" em Meus Anúncios:** botões no card (disabled durante a requisição), estado atualizado com a resposta do server; o placar reflete a venda via `/api/stats` (groupBy por status) — nenhum contador paralelo no cliente.
+- **Skeletons no formato hang-tag:** blocos de tinta a 8% com pulso de opacidade — shimmer de gradiente é proibido pelo DESIGN.md, então o pulso anima só `opacity` (regra transform/opacity-only) e `prefers-reduced-motion` desliga a animação. Vitrine (6), Meus Anúncios (3) e Detalhe.
+- **Empty states:** caixas de borda tracejada com carimbo Chivo Mono + CTA "Anunciar agora" (vitrine filtrada vazia e /mine vazio).
+- Pendente de QA manual (test-plan): cena do modo avião com feed cacheado no build de produção — depende do dispositivo de demo (pré-requisito 0).
+
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

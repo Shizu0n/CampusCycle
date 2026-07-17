@@ -5,7 +5,12 @@ import { prisma } from '../db/prisma';
 import { ApiError } from '../errors';
 import { asyncHandler } from '../lib/asyncHandler';
 import { validateBody } from '../middleware/validate';
-import { createListingSchema, type CreateListingInput } from '../schemas/listing';
+import {
+  createListingSchema,
+  updateListingSchema,
+  type CreateListingInput,
+  type UpdateListingInput,
+} from '../schemas/listing';
 
 // userId NUNCA aparece em respostas públicas (emenda CEO 5) — select explícito.
 const PUBLIC_SELECT = {
@@ -112,6 +117,26 @@ export function listingsRouter(requireIdentity: RequestHandler, writeLimiter: Re
         }
         throw err;
       }
+    })
+  );
+
+  router.patch(
+    '/:id',
+    writeLimiter,
+    requireIdentity,
+    validateBody(updateListingSchema),
+    asyncHandler(async (req, res) => {
+      const listing = await prisma.listing.findUnique({ where: { id: req.params.id } });
+      if (!listing) throw new ApiError(404, 'NOT_FOUND', 'Anúncio não encontrado');
+      if (listing.userId !== req.userId) {
+        throw new ApiError(403, 'FORBIDDEN', 'Você não é o dono deste anúncio');
+      }
+      const updated = await prisma.listing.update({
+        where: { id: listing.id },
+        data: req.body as UpdateListingInput,
+        select: PUBLIC_SELECT,
+      });
+      res.json(updated);
     })
   );
 

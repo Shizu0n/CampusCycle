@@ -111,6 +111,80 @@ describe('GET /api/listings/:id', () => {
   });
 });
 
+describe('PATCH /api/listings/:id', () => {
+  it('dono marca como vendido (200) sem expor userId', async () => {
+    const payload = makeListing();
+    await request(app).post('/api/listings').set('X-User-Id', userA).send(payload);
+
+    const res = await request(app)
+      .patch(`/api/listings/${payload.id}`)
+      .set('X-User-Id', userA)
+      .send({ status: 'sold' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('sold');
+    expect(res.body).not.toHaveProperty('userId');
+  });
+
+  it('não-dono → 403 no envelope; status permanece', async () => {
+    const payload = makeListing();
+    await request(app).post('/api/listings').set('X-User-Id', userA).send(payload);
+
+    const res = await request(app)
+      .patch(`/api/listings/${payload.id}`)
+      .set('X-User-Id', userB)
+      .send({ status: 'sold' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('FORBIDDEN');
+    const kept = await prisma.listing.findUnique({ where: { id: payload.id } });
+    expect(kept?.status).toBe('available');
+  });
+
+  it('inexistente → 404; sem identidade → 401', async () => {
+    const missing = await request(app)
+      .patch(`/api/listings/${makeListing().id}`)
+      .set('X-User-Id', userA)
+      .send({ status: 'sold' });
+    expect(missing.status).toBe(404);
+    expect(missing.body.error.code).toBe('NOT_FOUND');
+
+    const anon = await request(app)
+      .patch(`/api/listings/${makeListing().id}`)
+      .send({ status: 'sold' });
+    expect(anon.status).toBe(401);
+    expect(anon.body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('rejeita status desconhecido, campo estranho e body vazio (400)', async () => {
+    const payload = makeListing();
+    await request(app).post('/api/listings').set('X-User-Id', userA).send(payload);
+
+    for (const bad of [{ status: 'trocado' }, { userId: userB }, {}]) {
+      const res = await request(app)
+        .patch(`/api/listings/${payload.id}`)
+        .set('X-User-Id', userA)
+        .send(bad);
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    }
+  });
+
+  it('atualiza preço para doação (null) e título', async () => {
+    const payload = makeListing();
+    await request(app).post('/api/listings').set('X-User-Id', userA).send(payload);
+
+    const res = await request(app)
+      .patch(`/api/listings/${payload.id}`)
+      .set('X-User-Id', userA)
+      .send({ price: null, title: 'Doando: Cálculo Vol. 1' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.price).toBeNull();
+    expect(res.body.title).toBe('Doando: Cálculo Vol. 1');
+  });
+});
+
 describe('DELETE /api/listings/:id', () => {
   it('dono deleta (204); linha some', async () => {
     const payload = makeListing();
