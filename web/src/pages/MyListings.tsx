@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ListingCard } from '../components/ListingCard';
-import { apiDelete, apiGet } from '../lib/api';
+import { ApiError, apiDelete, apiGet } from '../lib/api';
+import { IDENTITY_MODE } from '../lib/auth';
 import type { Listing } from '../types';
 
 type LoadState = 'loading' | 'ready' | 'error';
@@ -11,6 +12,7 @@ type LoadState = 'loading' | 'ready' | 'error';
 export function MyListings() {
   const [state, setState] = useState<LoadState>('loading');
   const [items, setItems] = useState<Listing[]>([]);
+  const navigate = useNavigate();
 
   const load = useCallback(() => {
     apiGet<{ items: Listing[] }>('/api/listings/mine')
@@ -18,8 +20,16 @@ export function MyListings() {
         setItems(res.items);
         setState('ready');
       })
-      .catch(() => setState('error'));
-  }, []);
+      .catch((err) => {
+        // Token expirado no meio da sessão → re-login (a guarda de rota só
+        // cobre a AUSÊNCIA de sessão, não a expiração).
+        if (IDENTITY_MODE === 'jwt' && err instanceof ApiError && err.status === 401) {
+          navigate('/login', { state: { next: '/mine' } });
+          return;
+        }
+        setState('error');
+      });
+  }, [navigate]);
 
   useEffect(load, [load]);
 

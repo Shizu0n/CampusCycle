@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiPost } from '../lib/api';
+import { IDENTITY_MODE } from '../lib/auth';
 import { CATEGORIES, createListingSchema } from '../schemas/listing';
 import type { Listing } from '../types';
 
@@ -52,13 +53,17 @@ export function NewListing() {
       await apiPost<Listing>('/api/listings', parsed.data);
       navigate('/');
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401 && IDENTITY_MODE === 'jwt') {
+        navigate('/login', { state: { next: '/new' } });
+        return;
+      }
       setErrorMsg(err instanceof ApiError ? err.message : 'Falha de rede — tente novamente.');
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="new-listing-form">
+    <form onSubmit={handleSubmit} className="form-stack">
       <h2>Novo anúncio</h2>
 
       <label htmlFor="title">Título</label>

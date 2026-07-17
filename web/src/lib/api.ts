@@ -1,3 +1,4 @@
+import { getToken, IDENTITY_MODE } from './auth';
 import { getUserId } from './identity';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
@@ -17,6 +18,16 @@ export class ApiError extends Error {
   }
 }
 
+// Credencial EXCLUSIVA do estágio ativo (espelha o resolver do server):
+// anonymous → X-User-Id; jwt → Authorization Bearer (se houver sessão).
+function identityHeaders(): Record<string, string> {
+  if (IDENTITY_MODE === 'jwt') {
+    const token = getToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+  return { 'X-User-Id': getUserId() };
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -24,7 +35,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const res = await fetch(`${BASE}${path}`, {
       ...init,
       // Identidade em TODA requisição (o GET /mine também precisa dela).
-      headers: { 'X-User-Id': getUserId(), ...init.headers },
+      headers: { ...identityHeaders(), ...init.headers },
       signal: controller.signal,
     });
     if (res.status === 204) return undefined as T;

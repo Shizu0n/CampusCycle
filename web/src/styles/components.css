@@ -292,6 +292,17 @@
   font-weight: 600;
 }
 
+/* ========== Auth ========== */
+.auth-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.auth-greeting {
+  font-weight: 600;
+}
+
 /* ========== Navegação ========== */
 .desktop-nav {
   display: flex;

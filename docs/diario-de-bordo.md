@@ -51,4 +51,12 @@
 - **Resolver exclusivo em código:** modo `jwt` ignora `X-User-Id` por completo (teste: header presente sem token → 401); rotas de auth nem existem em modo `anonymous` (404); boot falha sem `JWT_SECRET` em modo jwt. Diagrama do `identity.ts` atualizado no mesmo commit.
 - Suíte: **30 testes verdes** (10 novos de auth, cobrindo as emendas Eng 5 e 12).
 
+### 2026-07-17 (dia 1, sessão contínua) — Auth JWT frontend (dia 7 do plano)
+
+- Sessão JWT no cliente: `AuthContext` + `startSession`/`endSession`, com **purge do runtime cache da API na troca de identidade** (emenda Eng 7) — o nome do cache (`campuscycle-api-v1`) virou contrato compartilhado em `lib/cacheNames.ts`, que o `sw.ts` consumirá nos dias 8-9.
+- Modo exclusivo espelhado no cliente via `VITE_IDENTITY_MODE`: em `jwt`, o transporte envia só `Authorization: Bearer` (nunca X-User-Id); em `anonymous`, só o UUID. Rotas `/login`/`/register` nem são montadas em modo anonymous.
+- Páginas Login/Registro validando com cópia verbatim de `schemas/auth.ts` do server; guarda `RequireAuth` em `/new` e `/mine`; 401 em voo (token expirado) → redireciona para login com retorno à rota original.
+- QA ponta a ponta em modo jwt (builds e envs via shell, sem tocar em `.env`): `/new` deslogado → `/login`; registro → saudação no header; anúncio criado com Bearer; `/mine` lista; logout → `/mine` volta ao login; senha errada exibe o erro do envelope; re-login retorna à rota `next` com os dados. Zero erros de console.
+- Ambiente local restaurado ao padrão `anonymous` — o flip para jwt é decisão de deploy (uma env em cada plataforma).
+
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

@@ -28,20 +28,20 @@
   gap: var(--sp-lg);
 }
 
-.new-listing-form {
+.form-stack {
   max-width: 480px;
   display: flex;
   flex-direction: column;
   gap: var(--sp-sm);
 }
 
-.new-listing-form label {
+.form-stack label {
   font-weight: 600;
   font-size: var(--text-ui);
   margin-top: var(--sp-sm);
 }
 
-.new-listing-form input[type='checkbox'] {
+.form-stack input[type='checkbox'] {
   min-height: auto;
   width: auto;
 }
