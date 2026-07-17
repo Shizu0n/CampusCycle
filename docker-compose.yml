@@ -1,0 +1,15 @@
+# Caminho local sem Neon: sobe um Postgres 16 local com `docker compose up -d db`
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: campuscycle
+      POSTGRES_PASSWORD: campuscycle
+      POSTGRES_DB: campuscycle
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

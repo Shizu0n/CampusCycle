@@ -21,6 +21,8 @@
 
 - **Prompt real (resumido):** "acesse as docs do planejamento e comecemos a implementar; todas as specs e docs do processo de engenharia versionadas no git; crie um CLAUDE.md para guiar as próximas sessões; poucos commits, apenas grandes progressos."
 - Specs versionadas em `docs/`; `CLAUDE.md` criado como contrato de contexto entre sessões de IA (garante que decisões travadas não sejam reabertas por uma sessão nova sem contexto).
-- Início do walking skeleton: Express + TypeScript + zod + Prisma (schema User/Listing), envelope de erro padronizado, middleware de identidade estágio 1.
+- **Curadoria humana sobre a IA (2 casos):** (1) a IA propôs commitar diretamente — processo corrigido: commits são sempre revisados e executados pelo autor; (2) a IA vazou paths locais da máquina em docs versionadas — detectado na revisão humana, varredura completa feita e regra permanente adicionada ao CLAUDE.md.
+- Walking skeleton do server implementado e verde: Express + TS estrito + zod + Prisma/Postgres (docker-compose local), envelope de erro padronizado, identidade estágio 1 (resolver exclusivo por `IDENTITY_MODE`, com diagrama inline), idempotência P2002 (mesmo dono → 200; outro dono → 409), rate limit de escrita, rotas `POST/GET/GET:id/DELETE /api/listings` + `/api/stats` (groupBy no banco + piso simulado) + `/api/health`.
+- **14 testes de API (vitest + supertest) passando**; smoke test manual das rotas com o servidor real. Pendente da fase: deploy no Render + ping (depende das contas do pré-requisito 0).
 
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

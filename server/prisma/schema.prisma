@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // runtime: URL pooled (pgbouncer) no Neon
+  directUrl = env("DIRECT_URL") // migrations: URL direta
+}
+
+model User {
+  id        String    @id // estágio 1: UUID anônimo do localStorage (linha stub via upsert no primeiro POST — sem isso a FK de Listing quebraria); estágio 2: ganha name/email/password no cadastro
+  name      String    @default("Anônimo")
+  email     String?   @unique // null até o cadastro (estágio 2)
+  password  String? // bcrypt hash; null até o cadastro
+  listings  Listing[]
+  createdAt DateTime  @default(now())
+}
+
+model Listing {
+  id          String   @id // UUID gerado no CLIENTE — idempotência da fila offline (reenvio do mesmo id = no-op)
+  title       String
+  description String
+  category    String // Livros | Engenharia | Computação | Eletrônicos | Vestuário | Móveis | Outros
+  price       Int? // em centavos; null = doação (evita Decimal, que serializa como string)
+  imageUrl    String? // opcional; vazio = placeholder da categoria no cliente
+  status      String   @default("available") // available | sold | donated
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime @default(now())
+
+  @@index([category, createdAt]) // feed filtrado/ordenado (emenda Eng 14)
+}
