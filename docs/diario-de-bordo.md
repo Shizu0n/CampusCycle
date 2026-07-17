@@ -25,4 +25,12 @@
 - Walking skeleton do server implementado e verde: Express + TS estrito + zod + Prisma/Postgres (docker-compose local), envelope de erro padronizado, identidade estágio 1 (resolver exclusivo por `IDENTITY_MODE`, com diagrama inline), idempotência P2002 (mesmo dono → 200; outro dono → 409), rate limit de escrita, rotas `POST/GET/GET:id/DELETE /api/listings` + `/api/stats` (groupBy no banco + piso simulado) + `/api/health`.
 - **14 testes de API (vitest + supertest) passando**; smoke test manual das rotas com o servidor real. Pendente da fase: deploy no Render + ping (depende das contas do pré-requisito 0).
 
+### 2026-07-17 (dia 1, sessão contínua) — Front esqueleto PWA (adiantando o dia 3)
+
+- Scaffold `web/`: React + Vite + TS estrito + vite-plugin-pwa em modo `injectManifest` (SW autoral em `src/sw.ts` com a tabela de estratégias como comentário), manifest completo, ícones 192/512 + maskable gerados com a fonte real Alfa Slab One.
+- Feed + NewListing consumindo a API; validação zod no cliente ANTES do envio (cópia disciplinada do schema do server); UUID do anúncio gerado no mount do formulário (fundação da idempotência da fila offline); UX de cold start ("servidor acordando").
+- Tokens do design system Xilo-Feira em CSS custom properties; fontes self-hosted via @fontsource.
+- **Verificação que rendeu correção (material de reflexão crítica):** o build inicial do PWA NÃO precacheava as fontes woff2 — o default do plugin só inclui js/css/html. Detectado inspecionando o manifest de precache gerado em `dist/sw.js`; sem a correção (`globPatterns`), a cena do modo avião renderizaria em Verdana. Corrigido e re-verificado (19 entradas, subsets vietnamitas excluídos).
+- **QA automatizado em navegador headless pegou bug real:** CORS bloqueava o preview de produção (allowlist só tinha a porta do dev server, 5173, não a do `vite preview`, 4173). Corrigido no server e re-testado: fluxo completo criar anúncio → validar → publicar → aparecer no feed, verificado em desktop e mobile viewport.
+
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

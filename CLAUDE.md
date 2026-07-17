@@ -49,8 +49,8 @@ Marketplace de economia circular universitária (desafio técnico de estágio, L
 
 | Dias | Fase | Status |
 |---|---|---|
-| 1-2 | Walking skeleton: server (listings CRUD parcial, zod, envelope, Prisma/Neon, deploy Render, ping) | ← EM ANDAMENTO |
-| 3 | Front esqueleto PWA (manifest, ícones, Feed + NewListing, deploy Vercel, instalado no device) | |
+| 1-2 | Walking skeleton: server (listings CRUD parcial, zod, envelope, Prisma/Neon, deploy Render, ping) | código ✅ (dia 1); falta deploy Render+ping |
+| 3 | Front esqueleto PWA (manifest, ícones, Feed + NewListing, deploy Vercel, instalado no device) | código ✅ (dia 1); falta deploy Vercel+instalar no device |
 | 4-5 | Obrigatórios: landing desktop, filtros, responsividade, /mine estágio 1 | |
 | 6-7 | Auth JWT (dia 6 backend, dia 7 frontend). Fallback: cortar no dia 8 → IDENTITY_MODE=anonymous permanente | |
 | 8-9 | Offline leitura (NetworkFirst), skeletons, empty states, contador de impacto, PATCH | |

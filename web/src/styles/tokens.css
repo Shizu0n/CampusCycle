@@ -1,0 +1,42 @@
+/* Design tokens — Xilo-Feira (fonte: DESIGN.md; não desviar sem aprovação) */
+:root {
+  /* Cor */
+  --paper: #fbf8f0;
+  --surface: #ffffff;
+  --ink: #141613;
+  --muted: #5e6157;
+  --verde: #0b7a3e; /* ação, links, publicado, doação */
+  --splash: #ffd100; /* RESERVADO: dinheiro e focus ring */
+  --warning: #b45309;
+  --error: #c2321b;
+  --info: #145c9e;
+
+  /* Material: bordas duras, sombras duras, cantos de xilogravura */
+  --border: 2px solid var(--ink);
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --radius: 2px;
+
+  /* Tipografia */
+  --font-display: 'Alfa Slab One', 'Archivo Variable', Verdana, sans-serif;
+  --font-ui: 'Archivo Variable', Verdana, sans-serif;
+  --font-mono: 'Chivo Mono', monospace;
+
+  /* Escala tipográfica (px) — piso duro: nada abaixo de 12 */
+  --text-meta: 12px;
+  --text-ui: 14px;
+  --text-body: 16px;
+  --text-lead: 18px;
+  --text-h3: 22px;
+  --text-h2: 28px;
+  --text-h1: 40px;
+
+  /* Espaçamento (base 4px) */
+  --sp-2xs: 2px;
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+  --sp-2xl: 48px;
+  --sp-3xl: 64px;
+}

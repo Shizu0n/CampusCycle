@@ -24,7 +24,12 @@ export function createApp(options: AppOptions = {}) {
     app.use(pinoHttp());
   }
 
-  const allowedOrigins = ['http://localhost:5173', process.env.WEB_ORIGIN].filter(Boolean);
+  // 5173 = vite dev; 4173 = vite preview (build de produção — onde o PWA é testável)
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:4173',
+    process.env.WEB_ORIGIN,
+  ].filter(Boolean);
   app.use(cors({ origin: allowedOrigins as string[] }));
   app.use(express.json({ limit: '50kb' }));
 

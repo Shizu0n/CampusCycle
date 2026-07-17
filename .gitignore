@@ -8,3 +8,4 @@ build/
 coverage/
 .vercel/
 video-script.md
+.gstack/

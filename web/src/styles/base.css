@@ -1,0 +1,133 @@
+/* Base Xilo-Feira — material de papel impresso (DESIGN.md) */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0 0 var(--sp-md);
+}
+
+a {
+  color: var(--verde);
+}
+
+/* Focus ring: splash + halo de tinta obrigatório (amarelo sozinho falha WCAG) */
+:focus-visible {
+  outline: 3px solid var(--splash);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* Piso interativo: 44px em tudo que se toca */
+button,
+input,
+select,
+textarea {
+  min-height: 44px;
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  color: var(--ink);
+}
+
+input,
+select,
+textarea {
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-sm) var(--sp-md);
+  width: 100%;
+}
+
+button {
+  cursor: pointer;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  background: var(--verde);
+  color: #fff;
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: var(--text-ui);
+  padding: var(--sp-sm) var(--sp-lg);
+  transition: transform 80ms ease-out;
+}
+
+.btn:active {
+  /* sombra dura "assenta" — nunca transicionar box-shadow */
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.card {
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+  padding: var(--sp-md);
+}
+
+/* Stamps (Chivo Mono, sempre uppercase, exatamente 12px, rotação ~-4°) */
+.stamp {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: inline-block;
+  padding: var(--sp-2xs) var(--sp-sm);
+  transform: rotate(-4deg);
+}
+
+.stamp--doacao {
+  background: var(--verde);
+  color: #fff;
+}
+
+.stamp--segunda-vida {
+  border: 2px solid var(--verde);
+  color: var(--verde);
+}
+
+/* Splash de preço: estrela de 12 pontas amarela, texto tinta (SÓ dinheiro) */
+.price-splash {
+  background: var(--splash);
+  color: var(--ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: var(--sp-xs) var(--sp-md);
+  clip-path: polygon(
+    50% 0%, 59% 12%, 72% 5%, 75% 19%, 90% 17%, 87% 32%, 100% 38%, 91% 50%,
+    100% 62%, 87% 68%, 90% 83%, 75% 81%, 72% 95%, 59% 88%, 50% 100%, 41% 88%,
+    28% 95%, 25% 81%, 10% 83%, 13% 68%, 0% 62%, 9% 50%, 0% 38%, 13% 32%,
+    10% 17%, 25% 19%, 28% 5%, 41% 12%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
