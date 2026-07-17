@@ -41,7 +41,7 @@ Marketplace de economia circular universitária (desafio técnico de estágio, L
 2. Conferir o cronograma (abaixo) e o estado real do repo para saber a fase.
 3. Implementar seguindo as emendas — elas são vinculantes.
 4. **Atualizar `docs/diario-de-bordo.md`** com: prompts reais usados, decisões, e qualquer erro/alucinação de IA detectado (a Reflexão Crítica do edital exige caso concreto).
-5. **Commits: SEMPRE feitos pelo usuário.** Claude NUNCA executa `git commit` — quando um marco estiver pronto, apenas sugerir a mensagem de commit e deixar o usuário revisar e commitar. Poucos commits, de marco (fim de fase, feature completa e testada), mensagens descritivas em português.
+5. **Commits: SEMPRE feitos pelo usuário.** Claude NUNCA executa `git commit` — quando um marco estiver pronto, apenas sugerir a mensagem de commit e deixar o usuário revisar e commitar. Poucos commits, de marco (fim de fase, feature completa e testada). **Mensagens de commit em INGLÊS** (padronizado em 2026-07-17; histórico antigo reescrito para inglês).
 6. **NUNCA escrever paths da máquina do usuário em arquivos versionados** (nada de `C:\...`, nome de usuário do Windows, pastas de nuvem sincronizada ou diretórios de ferramentas locais). Referências sempre relativas à raiz do repo. Antes de sugerir commit de docs, grep por esses padrões.
 7. Repo fica PRIVADO até o freeze do dia 13 (flip para público é item bloqueante do checklist do dia 13).
 
@@ -52,7 +52,7 @@ Marketplace de economia circular universitária (desafio técnico de estágio, L
 | 1-2 | Walking skeleton: server (listings CRUD parcial, zod, envelope, Prisma/Neon, deploy Render, ping) | código ✅ (dia 1); falta deploy Render+ping |
 | 3 | Front esqueleto PWA (manifest, ícones, Feed + NewListing, deploy Vercel, instalado no device) | código ✅ (dia 1); falta deploy Vercel+instalar no device |
 | 4-5 | Obrigatórios: landing desktop, filtros, responsividade, /mine estágio 1 | código ✅ (dia 1) |
-| 6-7 | Auth JWT (dia 6 backend, dia 7 frontend). Fallback: cortar no dia 8 → IDENTITY_MODE=anonymous permanente | |
+| 6-7 | Auth JWT (dia 6 backend, dia 7 frontend). Fallback: cortar no dia 8 → IDENTITY_MODE=anonymous permanente | backend ✅ (dia 1); falta frontend |
 | 8-9 | Offline leitura (NetworkFirst), skeletons, empty states, contador de impacto, PATCH | |
 | 10-12 | Fila offline (uau) + testes por transição + ensaio "explicar em voz alta" | |
 | 13 | README final + Diário consolidado + FREEZE (tag v1.0, repo público, verificar deslogado) | |

@@ -43,4 +43,12 @@
   3. *Processo de API stale:* o servidor de teste rodava código antigo (iniciado com `tsx` sem watch antes das mudanças) — os filtros "não funcionavam" no navegador mas passavam nos testes. Lição operacional: sempre conferir se o processo em execução corresponde ao código.
 - Nota do PWA em desenvolvimento: com `registerType: 'prompt'`, o SW serve o bundle precacheado antigo até o usuário aceitar a atualização — comportamento correto em produção, mas exige unregister/limpeza de caches ao fazer QA local de builds sucessivos.
 
+### 2026-07-17 (dia 1, sessão contínua) — Auth JWT backend (dia 6 do plano)
+
+- Padronização: mensagens de commit em inglês (histórico reescrito com `git filter-branch --msg-filter`; force-push necessário).
+- `POST /api/auth/register` e `/login`: bcrypt (custo 10), JWT com expiração de 7 dias (anúncio enfileirado offline horas antes ainda sincroniza), resposta idêntica para e-mail inexistente e senha errada (não vaza cadastro), P2002 → 409 EMAIL_TAKEN.
+- **Propriedade de segurança central testada:** registro SEMPRE cria usuário novo — teste prova que o stub anônimo não é reivindicado (id novo ≠ UUID anônimo; conta nova começa com 0 anúncios; o stub continua dono dos dele). Decisão da revisão de planejamento (vetor de account takeover) virou teste automatizado.
+- **Resolver exclusivo em código:** modo `jwt` ignora `X-User-Id` por completo (teste: header presente sem token → 401); rotas de auth nem existem em modo `anonymous` (404); boot falha sem `JWT_SECRET` em modo jwt. Diagrama do `identity.ts` atualizado no mesmo commit.
+- Suíte: **30 testes verdes** (10 novos de auth, cobrindo as emendas Eng 5 e 12).
+
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

@@ -3,7 +3,7 @@
  *
  *                    IDENTITY_MODE (lido no boot)
  *                    ┌───────────┴───────────┐
- *              "anonymous"                 "jwt" (dia 6+)
+ *              "anonymous"                 "jwt"
  *                    │                        │
  *         header X-User-Id (UUID)   Authorization: Bearer <token>
  *                    │                        │
@@ -16,8 +16,10 @@
  * (emenda Eng 5 / OV-6). O fallback do dia 8 = trocar a env, não o código.
  * Registro SEMPRE cria usuário novo — nunca reivindica o stub anônimo
  * (vetor de account takeover; emenda CEO 7 / OV-3).
+ * Modo jwt exige JWT_SECRET no boot (fail-fast em app.ts).
  */
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { ApiError } from '../errors';
 import { UUID_REGEX } from '../schemas/listing';
 
@@ -31,11 +33,7 @@ export type IdentityMode = 'anonymous' | 'jwt';
 
 export function resolveIdentityMode(): IdentityMode {
   const mode = process.env.IDENTITY_MODE ?? 'anonymous';
-  if (mode === 'anonymous') return mode;
-  if (mode === 'jwt') {
-    // Estágio 2 chega no dia 6. Falhar no boot evita rodar sem auth por engano.
-    throw new Error('IDENTITY_MODE=jwt ainda não implementado');
-  }
+  if (mode === 'anonymous' || mode === 'jwt') return mode;
   throw new Error(`IDENTITY_MODE inválido: "${mode}"`);
 }
 
@@ -49,7 +47,27 @@ function anonymousResolver(req: Request, _res: Response, next: NextFunction) {
   next();
 }
 
-export function buildRequireIdentity(mode: IdentityMode) {
+// Resolver do estágio 2: JWT no Authorization. X-User-Id é ignorado por completo.
+function buildJwtResolver(secret: string): RequestHandler {
+  return (req, _res, next) => {
+    const header = req.header('authorization');
+    const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
+    if (!token) {
+      throw new ApiError(401, 'UNAUTHORIZED', 'Token ausente — faça login');
+    }
+    try {
+      const payload = jwt.verify(token, secret);
+      if (typeof payload === 'string' || typeof payload.sub !== 'string') throw new Error();
+      req.userId = payload.sub;
+    } catch {
+      throw new ApiError(401, 'UNAUTHORIZED', 'Token inválido ou expirado');
+    }
+    next();
+  };
+}
+
+export function buildRequireIdentity(mode: IdentityMode, jwtSecret?: string): RequestHandler {
   if (mode === 'anonymous') return anonymousResolver;
-  throw new Error('resolver jwt ainda não implementado');
+  if (!jwtSecret) throw new Error('IDENTITY_MODE=jwt exige JWT_SECRET');
+  return buildJwtResolver(jwtSecret);
 }
