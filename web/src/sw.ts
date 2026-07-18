@@ -10,7 +10,7 @@
  *  ├──────────────────────────────┼──────────────────────────────────────────┤
  *  │ App shell (html/js/css/fonts)│ Precache (manifest injetado no build)    │
  *  │ Navegação (qualquer rota)    │ navigateFallback → index.html precacheado│
- *  │ GET /api/listings*           │ NetworkFirst (API_CACHE, timeout 4s)     │
+ *  │ GET /api/listings* + /stats  │ NetworkFirst (API_CACHE, timeout 4s)     │
  *  │ Imagens externas (http/s)    │ CacheFirst (IMAGE_CACHE, 60 itens/30d)   │
  *  │ /api/auth/*                  │ NetworkOnly (credenciais nunca em cache) │
  *  └──────────────────────────────┴──────────────────────────────────────────┘
@@ -37,14 +37,17 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')));
 // matcher de listings por clareza; os matchers não se sobrepõem.
 registerRoute(({ url }) => url.pathname.startsWith('/api/auth/'), new NetworkOnly());
 
-// Feed atualizado online; último feed visível offline (bônus de leitura offline).
-// timeout 4s: no cold start do Render (~1 min), quem já tem cache vê o feed
+// Feed E placar (/api/stats) atualizados online; último valor visível offline
+// (bônus de leitura offline). Sem /api/stats aqui, O PLACAR — o elemento-
+// assinatura — zerava offline na cena do modo avião (achado do QA no Android).
+// timeout 4s: no cold start do Render (~1 min), quem já tem cache vê o feed/placar
 // cacheado enquanto o servidor acorda (emenda CEO 8); sem cache, espera a rede.
 // API_CACHE é contrato compartilhado com o purge de troca de identidade
 // (lib/cacheNames.ts) — /mine varia por identidade.
 registerRoute(
   ({ url, request }) =>
-    request.method === 'GET' && url.pathname.startsWith('/api/listings'),
+    request.method === 'GET' &&
+    (url.pathname.startsWith('/api/listings') || url.pathname.startsWith('/api/stats')),
   new NetworkFirst({ cacheName: API_CACHE, networkTimeoutSeconds: 4 })
 );
 
