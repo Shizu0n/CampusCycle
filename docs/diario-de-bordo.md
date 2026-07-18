@@ -104,4 +104,12 @@
 - **Bug pego só no device (material de Reflexão Crítica):** offline, o feed dos 24 anúncios sobrevivia mas **O PLACAR (KG RESGATADOS) zerava** — inconsistência no elemento-assinatura do projeto, no pior lugar (a cena gravada). Causa: a regra NetworkFirst do `sw.ts` cacheava `/api/listings` mas NÃO `/api/stats`; offline o fetch das stats falha → placar cai para 0. Correção: incluir `/api/stats` na mesma estratégia NetworkFirst (mesmo `API_CACHE`), então offline o placar mostra o último valor conhecido (164) em vez de 0. Tabela-comentário do SW atualizada no mesmo commit. Bônus: no cold start do Render o placar também aparece cacheado em vez de spinnar. Pende redeploy + aceitar a atualização do SW.
 - **Coaching de gravação registrado:** para o vídeo, manter o app ABERTO em /mine ao desligar o modo avião — assim o selo vira "Publicado" ao vivo. Fechar o app antes de reconectar faz a sync rodar no load e perde a transição na câmera.
 
+### 2026-07-18 (dia 2, sessão contínua) — Bug de doação (dia 1!) + formatação de preço
+
+- **Bug reportado pelo usuário (crítico, presente desde o dia 1): impossível criar doação pela UI.** Marcar "É doação" → "informe um preço válido". Causa: `price: Number.isFinite(priceCents) ? priceCents : NaN` — com doação, `priceCents` é `null`, e **`Number.isFinite(null)` é `false`** (diferente do `isFinite` global, que converteria para 0), então a doação virava `NaN` e a validação zod rejeitava. As doações do seed existiam só porque entram direto no banco, sem passar pelo form — o usuário foi o primeiro a criar uma pela UI.
+- **Falha de cobertura do QA (honestidade):** o /qa automatizado testou criar item COM preço e o FILTRO de doações, mas nunca CRIAR uma doação. Lição: cobrir cada ramo do form (com preço × doação), não só o caminho feliz mais óbvio.
+- **Correção testável:** lógica de preço extraída para função pura `web/src/lib/price.ts` (`parsePriceCents` + `formatPriceInput`), padrão do `mergeMine`. Doação retorna `null` ANTES de qualquer parse. **9 testes novos** (suíte web 13 → 22), incluindo o caso de regressão exato da doação.
+- **Feature pedida junto (formatação automática de preço):** no blur do campo, `6000` → `6.000,00` (padrão pt-BR com milhar e 2 casas). Texto inválido permanece como digitado para o usuário corrigir. Round-trip com o parse verificado em teste (`6.000,00` → 600000 centavos).
+- Pende commit + redeploy.
+
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

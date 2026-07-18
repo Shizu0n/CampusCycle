@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ApiError, apiPost } from '../lib/api';
 import { IDENTITY_MODE } from '../lib/auth';
 import { enqueue, removeQueueItem } from '../lib/offlineQueue';
+import { formatPriceInput, parsePriceCents } from '../lib/price';
 import { CATEGORIES, createListingSchema, type CreateListingInput } from '../schemas/listing';
 import type { Listing } from '../types';
 
@@ -41,16 +42,12 @@ export function NewListing() {
     e.preventDefault();
     setErrorMsg(null);
 
-    const priceCents = isDonation
-      ? null
-      : Math.round(Number(priceText.replace(/\./g, '').replace(',', '.')) * 100);
-
     const candidate = {
       id: listingId,
       title,
       description,
       category,
-      price: Number.isFinite(priceCents) ? priceCents : NaN,
+      price: parsePriceCents(priceText, isDonation), // doação → null; inválido → NaN
       ...(imageUrl.trim() ? { imageUrl: imageUrl.trim() } : {}),
     };
 
@@ -139,6 +136,7 @@ export function NewListing() {
             placeholder="45,00"
             value={priceText}
             onChange={(e) => setPriceText(e.target.value)}
+            onBlur={() => setPriceText((t) => formatPriceInput(t))}
             required
           />
         </>
