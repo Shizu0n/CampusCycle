@@ -1,7 +1,13 @@
 import { getToken, IDENTITY_MODE } from './auth';
 import { getUserId } from './identity';
 
-const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+// Tolera VITE_API_URL com barra final: `${BASE}${path}` viraria `.../…//api` →
+// 404 no Express (a rota não casa com barra dupla). Normaliza removendo as barras
+// finais para que a config no deploy não precise ser exata.
+const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001').replace(
+  /\/+$/,
+  ''
+);
 
 // Render free hiberna (~1 min de cold start). Timeout generoso + mensagem de
 // "acordando" ficam por conta de quem chama (emenda CEO 8); aqui só o transporte.
