@@ -40,6 +40,12 @@
 - **O quê:** Paginação incremental na vitrine (`?page=`, take/skip 12).
 - **Contexto:** A API já pagina; o botão de carregar mais no front não é requisito do edital. Cortar não afeta nenhum critério de sucesso.
 
+## Cosmético (achado do /qa de 2026-07-18, deferido)
+
+### 6b. Link "Entrar" no header mobile
+- **O quê:** No mobile, o header mostra só o logo; "Entrar" não é diretamente alcançável (a bottom-nav tem Vitrine/Anunciar/Meus). O login acontece via guarda de rota (tocar Anunciar/Meus deslogado → /login) — funciona, mas é indireto.
+- **Severidade:** baixa (o fluxo da demo faz login pelo caminho da guarda naturalmente).
+
 ## Pós-avaliação (housekeeping)
 
 ### 7. Voltar o ping do UptimeRobot para /api/health

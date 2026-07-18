@@ -58,8 +58,9 @@ export function NewListing() {
     // na fila offline fica quase inalcançável.
     const parsed = createListingSchema.safeParse(candidate);
     if (!parsed.success) {
-      const first = parsed.error.issues[0];
-      setErrorMsg(`${first?.path.join('.')}: ${first?.message}`);
+      // Mensagens do schema já nomeiam o campo em PT — sem prefixo técnico
+      // (consistente com Login/Register).
+      setErrorMsg(parsed.error.issues[0]?.message ?? 'Dados inválidos.');
       return;
     }
 
