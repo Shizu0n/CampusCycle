@@ -6,6 +6,8 @@
 ## Ferramentas utilizadas
 
 - **Claude Code (Anthropic)** — planejamento, geração de código assistida e revisão. Todas as decisões de arquitetura passaram por revisão adversarial (descrita abaixo) antes de qualquer implementação.
+- **OpenAI Codex** — restauração de contexto, auditoria do código entregue e preparação da documentação final de estudo, README e freeze.
+- **gstack** — fluxos estruturados de planejamento, revisão de engenharia/design, QA, documentação e preservação de contexto entre sessões.
 - Segunda opinião cross-model: subagentes Claude com contexto limpo ("outside voice") desafiando o plano principal — 20 achados absorvidos, 1 rejeitado com justificativa.
 
 ## Sessões
@@ -111,5 +113,22 @@
 - **Correção testável:** lógica de preço extraída para função pura `web/src/lib/price.ts` (`parsePriceCents` + `formatPriceInput`), padrão do `mergeMine`. Doação retorna `null` ANTES de qualquer parse. **9 testes novos** (suíte web 13 → 22), incluindo o caso de regressão exato da doação.
 - **Feature pedida junto (formatação automática de preço):** no blur do campo, `6000` → `6.000,00` (padrão pt-BR com milhar e 2 casas). Texto inválido permanece como digitado para o usuário corrigir. Round-trip com o parse verificado em teste (`6.000,00` → 600000 centavos).
 - Pende commit + redeploy.
+
+### 2026-07-22 (dia 6) — README final e preparação do freeze
+
+- **Auditoria de entrega:** o README provisório foi confrontado com o código, o design doc, o plano de testes, o Diário, as configurações de ambiente e o estado de produção. Frontend, `/api/health` e `/api/stats` responderam 200; o placar retornou 24 anúncios, 3 vendidos e 2 doados no momento da verificação.
+- **README final:** passou a reunir links de produção, funcionalidades, explicação da fila offline, arquitetura, dois caminhos de execução local, variáveis de ambiente, referência da API, estratégia de testes, segurança, trade-offs, design system e o Diário de Bordo consolidado nos quatro tópicos exigidos pelo edital.
+- **Correção de documentação:** `web/.env.example` não declarava `VITE_IDENTITY_MODE`, embora o frontend use essa variável e ela precise espelhar o servidor. O exemplo foi atualizado para evitar uma configuração híbrida acidental.
+- **Freeze sem automação destrutiva:** o roteiro recebeu uma ordem explícita para revisão, testes, push, abertura pública, verificação deslogada, tag `v1.0` e gravação. Screenshots permaneceram como ação manual porque não havia imagens versionadas e não seria honesto inventá-las.
+- **Gate de verificação:** frontend 22/22 e servidor 35/35, além dos dois builds. A primeira tentativa do servidor falhou no setup porque o PostgreSQL local estava parado; o container `db` foi iniciado, confirmou-se que não havia migrations pendentes e a suíte passou integralmente na repetição. Container e Docker Desktop foram parados ao final. As cópias dos schemas zod tiveram zero linhas divergentes.
+- **Limite do workflow de IA:** o fluxo automatizado de release exigia uma branch de feature e tentaria conduzir commit/PR; como o projeto está em `main` e o processo delega todo commit ao usuário, apenas os critérios de auditoria foram aproveitados. Nenhuma branch, tag, visibilidade, stage ou commit foi alterado pela IA.
+
+### 2026-07-22 (dia 6, sessão contínua) — Busca e filtros responsivos na vitrine
+
+- **Prompt real (resumido):** “Revise a busca e os filtros da vitrine: categorias demoram para surtir efeito e uma busca curta, como `C`, não remove anúncios cujo nome não contém essa letra. Implemente uma solução geral, sem hardcode.”
+- **Diagnóstico antes da correção:** todos os filtros compartilhavam o mesmo debounce de 250 ms, inclusive categoria e “Só doações”; durante a espera e a nova requisição, os cards anteriores continuavam visíveis. Na API, `q` pesquisava título **ou descrição**, por isso um anúncio sem `C` no nome ainda aparecia quando sua descrição continha a letra.
+- **Decisão técnica:** a API continua sendo a fonte de verdade para não filtrar incorretamente apenas a página atual de 12 itens. O debounce ficou restrito ao texto digitado; categoria e doação agora disparam a consulta imediatamente; qualquer consulta aplicada troca os cards antigos por skeletons até a resposta. A busca textual passou a usar `contains` case-insensitive somente no título, sem regras específicas para letras ou categorias.
+- **TDD e regressão:** antes de alterar a produção, novos testes provaram as falhas: a categoria não fazia a segunda chamada imediatamente, o card antigo permanecia na tela e “Mesa dobrável” entrava em `q=c` apenas pela descrição “Compacta…”. Após a correção, a suíte da vitrine ficou com 3 testes dedicados e a API ganhou a asserção de busca curta somente por título.
+- **Verificação final:** frontend **25/25** e servidor **36/36**, além dos dois builds de produção. Nenhum commit, stage ou deploy foi executado pela IA.
 
 <!-- Adicionar nova entrada a cada sessão. Colar prompts complexos reais NA HORA em que renderem. Registrar imediatamente qualquer alucinação/erro de IA detectado. -->

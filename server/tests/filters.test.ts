@@ -10,6 +10,7 @@ beforeEach(async () => {
     { owner: userA, data: makeListing({ title: 'Stewart Cálculo', category: 'Livros', price: 4500 }) },
     { owner: userA, data: makeListing({ title: 'Jaleco M', description: 'Sem manchas, tamanho médio.', category: 'Vestuário', price: null }) },
     { owner: userB, data: makeListing({ title: 'Teclado mecânico', description: 'Switch brown ABNT2.', category: 'Computação', price: 15000 }) },
+    { owner: userB, data: makeListing({ title: 'Mesa dobrável', description: 'Compacta para apartamentos.', category: 'Móveis', price: 8000 }) },
   ];
   for (const f of fixtures) {
     await request(app).post('/api/listings').set('X-User-Id', f.owner).send(f.data);
@@ -23,13 +24,18 @@ describe('GET /api/listings — filtros', () => {
     expect(res.body.items[0].title).toBe('Stewart Cálculo');
   });
 
-  it('?q= busca em título e descrição, case-insensitive', async () => {
+  it('?q= matches titles case-insensitively', async () => {
     const byTitle = await request(app).get('/api/listings?q=stewart');
     expect(byTitle.body.total).toBe(1);
+  });
 
-    const byDescription = await request(app).get('/api/listings?q=abnt2');
-    expect(byDescription.body.total).toBe(1);
-    expect(byDescription.body.items[0].title).toBe('Teclado mecânico');
+  it('?q= excludes listings whose titles do not contain the query', async () => {
+    const res = await request(app).get('/api/listings?q=c');
+
+    expect(res.body.items.map((item: { title: string }) => item.title)).not.toContain('Mesa dobrável');
+    expect(
+      res.body.items.every((item: { title: string }) => item.title.toLocaleLowerCase('pt-BR').includes('c'))
+    ).toBe(true);
   });
 
   it('?donation=true retorna só doações (price null)', async () => {

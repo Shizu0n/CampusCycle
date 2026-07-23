@@ -39,10 +39,7 @@ export function listingsRouter(requireIdentity: RequestHandler, writeLimiter: Re
       if (typeof category === 'string' && category) where.category = category;
       if (donation === 'true') where.price = null;
       if (typeof q === 'string' && q.trim()) {
-        where.OR = [
-          { title: { contains: q.trim(), mode: 'insensitive' } },
-          { description: { contains: q.trim(), mode: 'insensitive' } },
-        ];
+        where.title = { contains: q.trim(), mode: 'insensitive' };
       }
 
       const [items, total] = await Promise.all([

@@ -11,42 +11,45 @@ type LoadState = 'loading' | 'cold' | 'ready' | 'error';
 // Vitrine = filtros + grid. Usada na Landing (desktop) e no Feed (PWA).
 export function Vitrine() {
   const [filters, setFilters] = useState<FilterState>({ category: '', q: '', donation: false });
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [state, setState] = useState<LoadState>('loading');
   const [data, setData] = useState<ListingsPage | null>(null);
 
   useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(filters.q.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [filters.q]);
+
+  useEffect(() => {
     let cancelled = false;
+    setState('loading');
 
     // Cold start do Render/Neon (emenda CEO 8): avisa se demorar.
     const coldTimer = setTimeout(() => {
       setState((s) => (s === 'loading' ? 'cold' : s));
     }, 4000);
 
-    // Debounce curto para a busca digitada não metralhar a API.
-    const fetchTimer = setTimeout(() => {
-      const params = new URLSearchParams();
-      if (filters.category) params.set('category', filters.category);
-      if (filters.q.trim()) params.set('q', filters.q.trim());
-      if (filters.donation) params.set('donation', 'true');
-      const qs = params.toString();
+    const params = new URLSearchParams();
+    if (filters.category) params.set('category', filters.category);
+    if (debouncedQuery) params.set('q', debouncedQuery);
+    if (filters.donation) params.set('donation', 'true');
+    const qs = params.toString();
 
-      apiGet<ListingsPage>(`/api/listings${qs ? `?${qs}` : ''}`)
-        .then((page) => {
-          if (cancelled) return;
-          setData(page);
-          setState('ready');
-        })
-        .catch(() => {
-          if (!cancelled) setState('error');
-        });
-    }, 250);
+    apiGet<ListingsPage>(`/api/listings${qs ? `?${qs}` : ''}`)
+      .then((page) => {
+        if (cancelled) return;
+        setData(page);
+        setState('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setState('error');
+      });
 
     return () => {
       cancelled = true;
       clearTimeout(coldTimer);
-      clearTimeout(fetchTimer);
     };
-  }, [filters]);
+  }, [filters.category, filters.donation, debouncedQuery]);
 
   return (
     <div>
